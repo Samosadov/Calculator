@@ -5,13 +5,15 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.regex.Pattern;
 
+import static home.demo.Operator.*;
+
 public class Calculator {
     private static final int WINDOW_WIDTH = 350;
     private static final int WINDOW_HEIGHT = 540;
     private static final int BUTTON_WIDTH = 60;
     private static final int BUTTON_HEIGHT = 50;
-    private static final int TEXTFIELD_WIDTH = 300;
-    private static final int TEXTFIELD_HEIGHT = 50;
+    private static final int INPUT_WIDTH = 300;
+    private static final int INPUT_HEIGHT = 50;
     private static final int MARGIN_X = 20;
     private static final int MARGIN_Y = 20;
     private static final int DELTA_X = BUTTON_WIDTH + MARGIN_X;
@@ -28,7 +30,7 @@ public class Calculator {
             btn0, btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9,
             btnChange, btnPoint, btnResult;
 
-    private char operator = ' ';
+    private Operator operator = NONE;
     private double result = 0;
     private boolean addable = true;
     private boolean flagError = false;
@@ -44,7 +46,7 @@ public class Calculator {
 
         input = new JTextField("0");
         input.setHorizontalAlignment(SwingConstants.RIGHT);
-        input.setBounds(x[0], y[0], TEXTFIELD_WIDTH, TEXTFIELD_HEIGHT);
+        input.setBounds(x[0], y[0], INPUT_WIDTH, INPUT_HEIGHT);
         input.setEditable(false);
         input.setBackground(Color.WHITE);
         input.setFont(new Font("Arial", Font.PLAIN, MAIN_FONT_SIZE));
@@ -112,15 +114,15 @@ public class Calculator {
             addable = false;
         });
 
-        btnDiv = initButton(":", MAIN_FONT_SIZE, x[3], y[2], event -> eventOperation('/'));
+        btnDiv = initButton(":", MAIN_FONT_SIZE, x[3], y[2], event -> eventOperation(DIVISION));
 
-        btn7 = initButton("7", MAIN_FONT_SIZE, x[0], y[3], event -> { eventDigital("7"); });
+        btn7 = initButton("7", MAIN_FONT_SIZE, x[0], y[3], event -> eventDigital("7"));
 
-        btn8 = initButton("8", MAIN_FONT_SIZE, x[1], y[3], event -> { eventDigital("8"); });
+        btn8 = initButton("8", MAIN_FONT_SIZE, x[1], y[3], event -> eventDigital("8"));
 
-        btn9 = initButton("9", MAIN_FONT_SIZE, x[2], y[3], event -> { eventDigital("9"); });
+        btn9 = initButton("9", MAIN_FONT_SIZE, x[2], y[3], event -> eventDigital("9"));
 
-        btnMul = initButton("x", MAIN_FONT_SIZE, x[3], y[3], event -> eventOperation('*'));
+        btnMul = initButton("x", MAIN_FONT_SIZE, x[3], y[3], event -> eventOperation(MULTIPLY));
 
         btn4 = initButton("4", MAIN_FONT_SIZE, x[0], y[4], event -> eventDigital("4"));
 
@@ -128,7 +130,7 @@ public class Calculator {
 
         btn6 = initButton("6", MAIN_FONT_SIZE, x[2], y[4], event -> eventDigital("6"));
 
-        btnSub = initButton("-", MAIN_FONT_SIZE, x[3], y[4], event -> eventOperation('-'));
+        btnSub = initButton("-", MAIN_FONT_SIZE, x[3], y[4], event -> eventOperation(SUBSTITUTE));
 
         btn1 = initButton("1", MAIN_FONT_SIZE, x[0], y[5], event -> eventDigital("1"));
 
@@ -136,7 +138,7 @@ public class Calculator {
 
         btn3 = initButton("3", MAIN_FONT_SIZE, x[2], y[5], event -> eventDigital("3"));
 
-        btnAdd = initButton("+", MAIN_FONT_SIZE, x[3], y[5], event -> eventOperation('+'));
+        btnAdd = initButton("+", MAIN_FONT_SIZE, x[3], y[5], event -> eventOperation(ADD));
 
         btnChange = initButton("+/-", OPTIONAL_FONT_SIZE, x[0], y[6], event -> {
             if (!flagError) {
@@ -166,25 +168,7 @@ public class Calculator {
             }
         });
 
-        btnResult = initButton("=", MAIN_FONT_SIZE, x[3], y[6], event -> eventOperation('='));
-
-//        btnLog = initButton("ln", x[4], y[3], event -> {
-//            repaintFont();
-//            if (Pattern.matches("([-]?\\d+[.]\\d*)|(\\d+)", input.getText())) {
-//                if (flag) {
-//                    result = Math.log(Double.parseDouble(input.getText()));
-//                    if (Pattern.matches("[-]?[\\d]+[.][0]*", String.valueOf(result))) {
-//                        input.setText(String.valueOf((int) result));
-//                    }
-//                    else {
-//                        input.setText(String.valueOf(result));
-//                    }
-//                    operator = 'l';
-//                    addable = false;
-//                }
-//            }
-//        });
-////        btnLog.setVisible(false);
+        btnResult = initButton("=", MAIN_FONT_SIZE, x[3], y[6], event -> eventOperation(EQUAL));
 
         window.setLayout(null);
         window.setResizable(false);
@@ -192,21 +176,10 @@ public class Calculator {
         window.setVisible(true);
     }
 
-    /*    private JComboBox<String> initComboBox(String[] items, int x, int y, String toolTip, Consumer consumerEvent) {
-            JComboBox<String> combo = new JComboBox<>(items);
-            combo.setBounds(x, y, 140, 25);
-            combo.setToolTipText(toolTip);
-            combo.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            combo.addItemListener(consumerEvent::accept);
-            window.add(combo);
-
-            return combo;
-        }*/
     private void reset() {
         input.setText("0");
-        operator = ' ';
-        result = 0;
-        addable = true;
+        operator = NONE;
+        result = 0;        addable = true;
         flagError = false;
     }
 
@@ -232,9 +205,9 @@ public class Calculator {
         }
     }
 
-    private void eventOperation(char op) {
+    private void eventOperation(Operator op) {
         if (!flagError) {
-            if (operator != ' ') {
+            if (operator != NONE) {
                 try {
                     result = calc(result, input.getText(), operator);
                     record();
@@ -246,8 +219,8 @@ public class Calculator {
             else {
                 result = Double.parseDouble(input.getText());
             }
-            if (op != '=') { operator = op; }
-            else { operator = ' '; }
+            if (op != EQUAL) { operator = op; }
+            else { operator = NONE; }
             addable = false;
         }
     }
@@ -256,7 +229,7 @@ public class Calculator {
         JButton btn = new JButton(label);
         btn.setBounds(x, y, BUTTON_WIDTH, BUTTON_HEIGHT);
         btn.setFont(new Font("Arial", Font.PLAIN, fontSize));
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));;
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.addActionListener(event);
         btn.setFocusable(false);
         window.add(btn);
@@ -264,21 +237,16 @@ public class Calculator {
         return btn;
     }
 
-    private double calc(double a, String input, char operator) {
+    private double calc(double a, String input, Operator operator) {
         this.input.setFont(this.input.getFont().deriveFont(Font.PLAIN));
         double b = Double.parseDouble(input);
-        switch(operator) {
-            case '+':
-                return a + b;
-            case '-':
-                return a - b;
-            case '*':
-                return a * b;
-            case '/':
-                return a / b;
-            default:
-                return b;
-        }
+        return switch (operator) {
+            case ADD -> a + b;
+            case SUBSTITUTE -> a - b;
+            case MULTIPLY -> a * b;
+            case DIVISION -> a / b;
+            default -> b;
+        };
     }
 
     public static void main(String[] args) {
